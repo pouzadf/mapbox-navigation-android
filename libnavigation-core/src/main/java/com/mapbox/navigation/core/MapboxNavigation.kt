@@ -598,8 +598,8 @@ constructor(
                 .distanceFormatter(distanceFormatter)
 
             // TODO provide a production routing tiles endpoint
-            val tilesUri = URI("")
-            val tilesVersion = ""
+            val tilesUri = URI("https://api-routing-tiles-staging.tilestream.net")
+            val tilesVersion = "2020_02_02-03_00_00"
             val tilesDir = if (tilesUri.toString().isNotEmpty() && tilesVersion.isNotEmpty()) {
                 File(
                     context.filesDir,
