@@ -23,6 +23,12 @@ import com.mapbox.navigation.ui.map.NavigationMapboxMap
 import com.mapbox.navigation.utils.extensions.ifNonNull
 import kotlinx.android.synthetic.main.activity_final_destination_arrival_building_highlight.*
 
+/**
+ * This example shows how to use the Navigation UI SDK's [DestinationBuildingFootprintLayer]
+ * class to highlight a building footprint when the device has arrived at the final
+ * destination. The final destination arrival callback is from
+ * [RouteListener.onFinalDestinationArrival].
+ */
 class ArrivalUiFootprintHighlightActivityKt : AppCompatActivity(), OnNavigationReadyCallback, NavigationListener,
         BannerInstructionsListener, RouteListener {
 
@@ -107,7 +113,10 @@ class ArrivalUiFootprintHighlightActivityKt : AppCompatActivity(), OnNavigationR
 
                 val optionsBuilder = NavigationViewOptions.builder()
                 optionsBuilder.navigationListener(this)
+
+                // Pass the RouteListener interface (this activity)
                 optionsBuilder.routeListener(this)
+
                 optionsBuilder.directionsRoute(directionsRoute)
                 optionsBuilder.shouldSimulateRoute(true)
                 optionsBuilder.bannerInstructionsListener(this)
@@ -151,8 +160,16 @@ class ArrivalUiFootprintHighlightActivityKt : AppCompatActivity(), OnNavigationR
     }
 
     override fun onFinalDestinationArrival() {
-        // Show and move the destination building highlighted footprint
+        // Adjust the visibility of the destination building highlighted footprint layer
         destinationBuildingFootprintLayer.updateVisibility(true)
+
+        /**
+         * Set the [LatLng] to be used by the [DestinationBuildingFootprintLayer].
+         * The LatLng would fall within a building polygon footprint. If not, the
+         * [DestinationBuildingFootprintLayer] class won't highlight a footprint.
+         * The LatLng passed through below is different than the coordinate used as the
+         * final destination coordinate in this example's [DirectionsRoute].
+         */
         destinationBuildingFootprintLayer.setDestinationBuildingLocation(LatLng(37.790932,
                 -122.414279))
     }
