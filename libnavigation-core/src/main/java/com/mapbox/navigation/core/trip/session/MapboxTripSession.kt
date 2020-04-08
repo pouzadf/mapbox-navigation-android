@@ -258,26 +258,26 @@ class MapboxTripSession(
         statusUpdateTimer.stopJobs()
         ioJobController.scope.launch {
             navigator.updateLocation(rawLocation)
-            fireOffStatusPolling()
-            statusUpdateTimer.startTimer {
-                if (Date().time - lastLocationUpdateTimeMillis >= STATUS_POLLING_INTERVAL) {
-                    fireOffStatusPolling()
-                }
+            updateDataFromNavigatorStatus()
+        }
+        statusUpdateTimer.startTimer {
+            if (Date().time - lastLocationUpdateTimeMillis >= STATUS_POLLING_INTERVAL) {
+                updateDataFromNavigatorStatus()
             }
         }
         this.rawLocation = rawLocation
     }
 
-    private fun fireOffStatusPolling() {
+    private fun updateDataFromNavigatorStatus() {
         mainJobController.scope.launch {
-            val status = navigatorPolling()
+            val status = getNavigatorStatus()
             updateEnhancedLocation(status.enhancedLocation, status.keyPoints)
             updateRouteProgress(status.routeProgress)
             isOffRoute = status.offRoute
         }
     }
 
-    private suspend fun navigatorPolling(): TripStatus =
+    private suspend fun getNavigatorStatus(): TripStatus =
         withContext(ioJobController.scope.coroutineContext) {
             val date = Date()
             date.time = date.time + navigatorPollingDelay
