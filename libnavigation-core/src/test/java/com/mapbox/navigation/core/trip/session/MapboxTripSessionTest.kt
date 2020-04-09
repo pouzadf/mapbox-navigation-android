@@ -90,7 +90,7 @@ class MapboxTripSessionTest {
         )
 
         coEvery { navigator.getStatus(any()) } returns tripStatus
-        every { navigator.updateLocation(any()) } returns false
+        coEvery { navigator.updateLocation(any()) } returns false
         coEvery { navigator.setRoute(any()) } returns navigationStatus
         every { tripStatus.enhancedLocation } returns enhancedLocation
         every { tripStatus.keyPoints } returns keyPoints
@@ -190,7 +190,7 @@ class MapboxTripSessionTest {
     fun locationPush() = coroutineRule.runBlockingTest {
         tripSession.start()
         updateLocationAndJoin()
-        verify { navigator.updateLocation(location) }
+        coVerify { navigator.updateLocation(location) }
         tripSession.stop()
     }
 
