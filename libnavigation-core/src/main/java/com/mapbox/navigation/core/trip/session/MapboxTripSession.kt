@@ -272,6 +272,7 @@ class MapboxTripSession(
         val deltaTime = currentTimeMillis - lastStatusUpdateTimeMillis
         if (deltaTime < minTimeBetweenGetStatusCallsMillis) return
 
+        lastStatusUpdateTimeMillis = currentTimeMillis
         mainJobController.scope.launch {
             val status = getNavigatorStatus()
             updateEnhancedLocation(status.enhancedLocation, status.keyPoints)
