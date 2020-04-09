@@ -3,6 +3,7 @@ package com.mapbox.navigation.core.trip.session
 import android.hardware.SensorEvent
 import android.location.Location
 import android.os.Looper
+import android.os.SystemClock
 import android.util.Log
 import com.mapbox.android.core.location.LocationEngine
 import com.mapbox.android.core.location.LocationEngineCallback
@@ -61,7 +62,7 @@ class MapboxTripSession(
     private val bannerInstructionEvent = BannerInstructionEvent()
     private val voiceInstructionEvent = VoiceInstructionEvent()
 
-    private var lastLocationUpdateTimeMillis: Long = 0
+    private var lastStatusUpdateTimeMillis: Long = 0
     private val statusUpdateTimer = MapboxTimer().apply { restartAfterMillis = TimeUnit.SECONDS.toMillis(1) }
 
     private var state: TripSessionState = TripSessionState.STOPPED
@@ -254,21 +255,23 @@ class MapboxTripSession(
 
     private fun updateRawLocation(rawLocation: Location) {
         locationObservers.forEach { it.onRawLocationChanged(rawLocation) }
-        lastLocationUpdateTimeMillis = Date().time
         statusUpdateTimer.stopJobs()
         ioJobController.scope.launch {
             navigator.updateLocation(rawLocation)
             updateDataFromNavigatorStatus()
         }
         statusUpdateTimer.startTimer {
-            if (Date().time - lastLocationUpdateTimeMillis >= STATUS_POLLING_INTERVAL) {
-                updateDataFromNavigatorStatus()
-            }
+            updateDataFromNavigatorStatus()
         }
         this.rawLocation = rawLocation
     }
 
+    private val minTimeBetweenGetStatusCallsMillis = TimeUnit.SECONDS.toMillis(1)
     private fun updateDataFromNavigatorStatus() {
+        val currentTimeMillis = SystemClock.elapsedRealtime()
+        val deltaTime = currentTimeMillis - lastStatusUpdateTimeMillis
+        if (deltaTime < minTimeBetweenGetStatusCallsMillis) return
+
         mainJobController.scope.launch {
             val status = getNavigatorStatus()
             updateEnhancedLocation(status.enhancedLocation, status.keyPoints)
