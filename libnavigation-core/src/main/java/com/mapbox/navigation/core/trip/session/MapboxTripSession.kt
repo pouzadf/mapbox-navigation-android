@@ -11,6 +11,7 @@ import com.mapbox.android.core.location.LocationEngineResult
 import com.mapbox.api.directions.v5.models.BannerInstructions
 import com.mapbox.api.directions.v5.models.DirectionsRoute
 import com.mapbox.api.directions.v5.models.VoiceInstructions
+import com.mapbox.navigation.base.trip.model.RouteLegProgress
 import com.mapbox.navigation.base.trip.model.RouteProgress
 import com.mapbox.navigation.core.trip.service.TripService
 import com.mapbox.navigation.navigator.MapboxNativeNavigator
@@ -28,6 +29,18 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 // todo make internal
+/**
+ * Default implementation of [TripSession]
+ *
+ * @param tripService TripService
+ * @param locationEngine LocationEngine
+ * @param locationEngineRequest LocationEngineRequest
+ * @param navigatorPollingDelay delay fon navigation status predictions.
+ * For more information see [MapboxNativeNavigator.getStatus]. Unit is milliseconds
+ * @param navigator Native navigator
+ *
+ * @property route should be set to start routing
+ */
 class MapboxTripSession(
     override val tripService: TripService,
     override val locationEngine: LocationEngine,
@@ -80,14 +93,29 @@ class MapboxTripSession(
     private var enhancedLocation: Location? = null
     private var routeProgress: RouteProgress? = null
 
+    /**
+     * Return raw location
+     */
     override fun getRawLocation() = rawLocation
 
+    /**
+     * Return enhanced location
+     */
     override fun getEnhancedLocation() = enhancedLocation
 
+    /**
+     * Provide route progress
+     */
     override fun getRouteProgress() = routeProgress
 
+    /**
+     * Current [MapboxTripSession] state
+     */
     override fun getState(): TripSessionState = state
 
+    /**
+     * Start MapboxTipSession
+     */
     override fun start() {
         if (state == TripSessionState.STARTED) {
             return
@@ -106,6 +134,9 @@ class MapboxTripSession(
         locationEngine.getLastLocation(locationEngineCallback)
     }
 
+    /**
+     * Stop MapboxTipSession
+     */
     override fun stop() {
         if (state == TripSessionState.STOPPED) {
             return
@@ -129,59 +160,111 @@ class MapboxTripSession(
         isOffRoute = false
     }
 
+    /**
+     * Register [LocationObserver] to receive location updates
+     */
     override fun registerLocationObserver(locationObserver: LocationObserver) {
         locationObservers.add(locationObserver)
         rawLocation?.let { locationObserver.onRawLocationChanged(it) }
         enhancedLocation?.let { locationObserver.onEnhancedLocationChanged(it, emptyList()) }
     }
 
+    /**
+     * Unregister [LocationObserver]
+     */
     override fun unregisterLocationObserver(locationObserver: LocationObserver) {
         locationObservers.remove(locationObserver)
     }
 
+    /**
+     * Unregister all [LocationObserver]
+     *
+     * @see [registerLocationObserver]
+     */
     override fun unregisterAllLocationObservers() {
         locationObservers.clear()
     }
 
+    /**
+     * Register [RouteProgressObserver] to receive information about about routing's state
+     * like [BannerInstructions], [RouteLegProgress] and ect.
+     *
+     * @see [RouteProgress]
+     */
     override fun registerRouteProgressObserver(routeProgressObserver: RouteProgressObserver) {
         routeProgressObservers.add(routeProgressObserver)
         routeProgress?.let { routeProgressObserver.onRouteProgressChanged(it) }
     }
 
+    /**
+     * Unregister [RouteProgressObserver]
+     */
     override fun unregisterRouteProgressObserver(routeProgressObserver: RouteProgressObserver) {
         routeProgressObservers.remove(routeProgressObserver)
     }
 
+    /**
+     * Unregister all [RouteProgressObserver]
+     *
+     * @see [registerRouteProgressObserver]
+     */
     override fun unregisterAllRouteProgressObservers() {
         routeProgressObservers.clear()
     }
 
+    /**
+     * Register [OffRouteObserver] to receive notification about off-route events
+     */
     override fun registerOffRouteObserver(offRouteObserver: OffRouteObserver) {
         offRouteObservers.add(offRouteObserver)
         offRouteObserver.onOffRouteStateChanged(isOffRoute)
     }
 
+    /**
+     * Unregister [OffRouteObserver]
+     */
     override fun unregisterOffRouteObserver(offRouteObserver: OffRouteObserver) {
         offRouteObservers.remove(offRouteObserver)
     }
 
+    /**
+     * Unregister all [OffRouteObserver]
+     *
+     * @see [registerOffRouteObserver]
+     */
     override fun unregisterAllOffRouteObservers() {
         offRouteObservers.clear()
     }
 
+    /**
+     * Register [TripSessionStateObserver] to receive current TripSession's state
+     *
+     * @see [TripSessionState]
+     */
     override fun registerStateObserver(stateObserver: TripSessionStateObserver) {
         stateObservers.add(stateObserver)
         stateObserver.onSessionStateChanged(state)
     }
 
+    /**
+     * Unregister [TripSessionStateObserver]
+     */
     override fun unregisterStateObserver(stateObserver: TripSessionStateObserver) {
         stateObservers.remove(stateObserver)
     }
 
+    /**
+     * Unregister all [TripSessionStateObserver]
+     *
+     * @see [registerStateObserver]
+     */
     override fun unregisterAllStateObservers() {
         stateObservers.clear()
     }
 
+    /**
+     * Register [BannerInstructionsObserver]
+     */
     override fun registerBannerInstructionsObserver(bannerInstructionsObserver: BannerInstructionsObserver) {
         bannerInstructionsObservers.add(bannerInstructionsObserver)
         routeProgress?.let {
@@ -191,14 +274,25 @@ class MapboxTripSession(
         }
     }
 
+    /**
+     * Unregister all [BannerInstructionsObserver]
+     *
+     * @see [registerBannerInstructionsObserver]
+     */
     override fun unregisterAllBannerInstructionsObservers() {
         bannerInstructionsObservers.clear()
     }
 
+    /**
+     * Unregister [BannerInstructionsObserver]
+     */
     override fun unregisterBannerInstructionsObserver(bannerInstructionsObserver: BannerInstructionsObserver) {
         bannerInstructionsObservers.remove(bannerInstructionsObserver)
     }
 
+    /**
+     * Register [VoiceInstructionsObserver]
+     */
     override fun registerVoiceInstructionsObserver(voiceInstructionsObserver: VoiceInstructionsObserver) {
         voiceInstructionsObservers.add(voiceInstructionsObserver)
         routeProgress?.let {
@@ -208,14 +302,25 @@ class MapboxTripSession(
         }
     }
 
+    /**
+     * Unregister [VoiceInstructionsObserver]
+     */
     override fun unregisterVoiceInstructionsObserver(voiceInstructionsObserver: VoiceInstructionsObserver) {
         voiceInstructionsObservers.remove(voiceInstructionsObserver)
     }
 
+    /**
+     * Unregister all [VoiceInstructionsObserver]
+     *
+     * @see [registerVoiceInstructionsObserver]
+     */
     override fun unregisterAllVoiceInstructionsObservers() {
         voiceInstructionsObservers.clear()
     }
 
+    /**
+     * Sensor event consumed by native
+     */
     override fun updateSensorEvent(sensorEvent: SensorEvent) {
         navigator.updateSensorEvent(sensorEvent)
     }

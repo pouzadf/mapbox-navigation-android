@@ -20,6 +20,9 @@ private const val PERCENT_NORMALIZER = 100.0
 private const val SCREEN_BRIGHTNESS_MAX = 255.0
 private const val BRIGHTNESS_EXCEPTION_VALUE = -1
 
+/**
+ * Encode route geometry to Precision 5
+ */
 fun obtainGeometry(directionsRoute: DirectionsRoute?): String =
     ifNonNull(directionsRoute, directionsRoute?.geometry()) { _, geometry ->
         if (TextUtils.isEmpty(geometry)) {
@@ -29,6 +32,10 @@ fun obtainGeometry(directionsRoute: DirectionsRoute?): String =
         return@ifNonNull PolylineUtils.encode(positions, PRECISION_5)
     } ?: ""
 
+/**
+ * Provide count of steps in whole route(include legs)
+ * @see [com.mapbox.api.directions.v5.models.LegStep]
+ */
 fun obtainStepCount(directionsRoute: DirectionsRoute?): Int =
     ifNonNull(directionsRoute, directionsRoute?.legs()) { _, legs ->
         var stepCount = 0
@@ -38,6 +45,10 @@ fun obtainStepCount(directionsRoute: DirectionsRoute?): Int =
         return@ifNonNull stepCount
     } ?: 0
 
+/**
+ * Provide absolute distance(between 2 points, non include geometry)
+ * @return Int distance unit kilometer
+ */
 fun obtainAbsoluteDistance(
     currentLocation: Location?,
     finalPoint: Point
@@ -48,10 +59,16 @@ fun obtainAbsoluteDistance(
     } ?: return 0
 }
 
+/**
+ * Provide last point of [DirectionsRoute]
+ */
 fun obtainRouteDestination(route: DirectionsRoute?): Point =
     route?.legs()?.lastOrNull()?.steps()?.lastOrNull()?.maneuver()?.location()
         ?: Point.fromLngLat(0.0, 0.0)
 
+/**
+ * Provide volume level in range *0..100*
+ */
 fun obtainVolumeLevel(context: Context): Int {
     val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     return floor(
@@ -60,6 +77,9 @@ fun obtainVolumeLevel(context: Context): Int {
     ).toInt()
 }
 
+/**
+ * Provide screen brightness in range *0..100*
+ */
 fun obtainScreenBrightness(context: Context): Int =
     try {
         val systemScreenBrightness = Settings.System.getInt(
@@ -71,6 +91,10 @@ fun obtainScreenBrightness(context: Context): Int =
         BRIGHTNESS_EXCEPTION_VALUE
     }
 
+/**
+ * Provide audio type
+ * @see [com.mapbox.navigation.utils.audio.AudioTypeResolver]
+ */
 fun obtainAudioType(context: Context): String =
     AudioTypeChain().setup().obtainAudioType(context)
 

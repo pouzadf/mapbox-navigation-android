@@ -440,10 +440,18 @@ constructor(
         tripSession.unregisterStateObserver(tripSessionStateObserver)
     }
 
+    /**
+     * Start observe faster route of trip session via [FasterRouteObserver]
+     *
+     * @param fasterRouteObserver FasterRouteObserver
+     */
     fun attachFasterRouteObserver(fasterRouteObserver: FasterRouteObserver) {
         fasterRouteController.attach(fasterRouteObserver)
     }
 
+    /**
+     * Stop observe faster route.
+     */
     fun detachFasterRouteObserver() {
         fasterRouteController.stop()
     }
@@ -550,6 +558,9 @@ constructor(
         }
     }
 
+    /**
+     * On new sensor event must be handled
+     */
     fun updateSensorEvent(sensorEvent: SensorEvent) {
         tripSession.updateSensorEvent(sensorEvent)
     }
@@ -565,6 +576,14 @@ constructor(
 
     companion object {
 
+        /**
+         * Send user feedback on any issue or problem with Navigation SDK
+         *
+         * @param feedbackType one of [FeedbackEvent.FeedbackType]
+         * @param description description message
+         * @param feedbackSource one of [FeedbackEvent.FeedbackSource]
+         * @param screenshot encoded screenshot (optional)
+         */
         @JvmStatic
         fun postUserFeedback(
             @FeedbackEvent.FeedbackType feedbackType: String,

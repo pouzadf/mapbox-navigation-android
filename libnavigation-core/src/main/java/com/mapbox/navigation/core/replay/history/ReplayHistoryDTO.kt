@@ -2,6 +2,14 @@ package com.mapbox.navigation.core.replay.history
 
 import com.google.gson.annotations.SerializedName
 
+/**
+ * DTO of ReplayHistory. If you'd like to add custom event, add it to [events] and
+ * pass [CustomEventMapper] to [ReplayHistoryMapper]
+ *
+ * @param historyVersion version of history
+ * @param version // todo add docs
+ * @param events include custom
+ */
 data class ReplayHistoryDTO(
     @SerializedName("history_version")
     val historyVersion: String,
