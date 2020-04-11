@@ -108,6 +108,9 @@ class MapRouteArrow {
   }
 
   void addUpcomingManeuverArrow(RouteProgress routeProgress) {
+    if (routeProgress.route() == null) {
+      return;
+    }
     boolean invalidUpcomingStepPoints = routeProgress.upcomingStepPoints() == null
             || routeProgress.upcomingStepPoints().size() < TWO_POINTS;
     boolean invalidCurrentStepPoints =
@@ -139,6 +142,9 @@ class MapRouteArrow {
   }
 
   private List<Point> obtainArrowPointsFrom(RouteProgress routeProgress) {
+    if (routeProgress.route() == null) {
+      return Collections.emptyList();
+    }
     List<Point> reversedCurrent =
       new ArrayList<>(routeProgress.currentLegProgress().currentStepProgress().stepPoints());
     Collections.reverse(reversedCurrent);
@@ -160,16 +166,20 @@ class MapRouteArrow {
   }
 
   private void updateArrowShaftWith(List<Point> points) {
-    LineString shaft = LineString.fromLngLats(points);
-    Feature arrowShaftGeoJsonFeature = Feature.fromGeometry(shaft);
-    arrowShaftGeoJsonSource.setGeoJson(arrowShaftGeoJsonFeature);
+    if (!points.isEmpty()) {
+      LineString shaft = LineString.fromLngLats(points);
+      Feature arrowShaftGeoJsonFeature = Feature.fromGeometry(shaft);
+      arrowShaftGeoJsonSource.setGeoJson(arrowShaftGeoJsonFeature);
+    }
   }
 
   private void updateArrowHeadWith(List<Point> points) {
-    double azimuth = TurfMeasurement.bearing(points.get(points.size() - 2), points.get(points.size() - 1));
-    Feature arrowHeadGeoJsonFeature = Feature.fromGeometry(points.get(points.size() - 1));
-    arrowHeadGeoJsonFeature.addNumberProperty(ARROW_BEARING, (float) MathUtils.wrap(azimuth, 0, MAX_DEGREES));
-    arrowHeadGeoJsonSource.setGeoJson(arrowHeadGeoJsonFeature);
+    if (!points.isEmpty()) {
+      double azimuth = TurfMeasurement.bearing(points.get(points.size() - 2), points.get(points.size() - 1));
+      Feature arrowHeadGeoJsonFeature = Feature.fromGeometry(points.get(points.size() - 1));
+      arrowHeadGeoJsonFeature.addNumberProperty(ARROW_BEARING, (float) MathUtils.wrap(azimuth, 0, MAX_DEGREES));
+      arrowHeadGeoJsonSource.setGeoJson(arrowHeadGeoJsonFeature);
+    }
   }
 
   private void initialize(String aboveLayer) {
